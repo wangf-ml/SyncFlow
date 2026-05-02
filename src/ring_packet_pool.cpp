@@ -95,10 +95,10 @@ namespace syncflow {
         uint64_t idx = cur_read % pool_size_;
         auto& pkt = ringpool_[idx];
 
-        if (!pkt.try_claim(static_cast<uint32_t>(consumer_id))) {
-            //已处理过
-            return nullptr;
-        }
+        // if (!pkt.try_claim(static_cast<uint32_t>(consumer_id))) {
+        //     //已处理过
+        //     return nullptr;
+        // }
 
         return &pkt;
     }
