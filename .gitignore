@@ -1,0 +1,18 @@
+# 忽略编译输出目录
+build/
+cmake-build-*/
+EXTAND/
+
+# 忽略临时文件
+*.o
+*.out
+*.log
+
+# 忽略库文件
+*.a
+*.so
+
+# IDE 配置
+.vscode/
+.idea/
+*.user
