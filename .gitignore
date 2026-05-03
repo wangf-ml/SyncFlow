@@ -1,7 +1,7 @@
 # 忽略编译输出目录
 build/
 cmake-build-*/
-EXTAND/
+
 
 # 忽略临时文件
 *.o

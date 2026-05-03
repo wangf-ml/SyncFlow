@@ -6,10 +6,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "pixel_format.h"
 #include "image_info.h"
-
-class PixelFormat;
 
 
 namespace syncflow {
@@ -36,5 +33,5 @@ struct ImageBuffer {
 
     ImageBuffer() = default;
 };
-} // namespace syncflow
+}
 

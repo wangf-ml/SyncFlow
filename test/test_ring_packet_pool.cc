@@ -6,7 +6,7 @@
 
 using namespace syncflow;
 
-// 辅助函数：生成一个简单的 ImageInfo（NV12 格式，1920x1080）
+// 辅助函数：生成一个简单的 ImageInfo
 ImageInfo MakeTestImageInfo() {
     ImageInfo info;
     info.width  = 1920;
@@ -52,9 +52,6 @@ TEST(RingPacketPoolTest, BasicProducerConsumer) {
     // 生产者获取一个 Packet
     Packet* pkt = pool.PAcquire();
     ASSERT_NE(pkt, nullptr);
-
-    // 填充一些模拟数据（可选）
-    // ...
 
     // 发布
     pool.PRelease();

@@ -24,7 +24,6 @@ inline uint32_t AllConsumersMask(size_t num_consumers) {
 struct Packet {
 
     Packet() = default;
-    // ---------- 移动构造函数 ----------
     Packet(Packet&& other) noexcept
         : image(std::move(other.image)),
           consumer_mask(other.consumer_mask.load(std::memory_order_relaxed)),
@@ -36,7 +35,7 @@ struct Packet {
         other.slot_read_index_.store(0, std::memory_order_relaxed);
     }
 
-    // ---------- 移动赋值运算符 ----------
+
     Packet& operator=(Packet&& other) noexcept {
         if (this != &other) {
             image = std::move(other.image);
@@ -49,21 +48,21 @@ struct Packet {
         return *this;
     }
 
-    // 禁止拷贝
+
     Packet(const Packet&) = delete;
     Packet& operator=(const Packet&) = delete;
 
-    // ------ 数据成员 ------
+
     std::shared_ptr<ImageBuffer> image;
     uint64_t epoch{0};
     std::atomic<unsigned> consumer_mask{0};
     std::atomic<unsigned> slot_read_index_{0};
 
-    // ------ 已有方法 ------
+
     bool try_claim(uint32_t consumer_id) {
         uint32_t my_bit = 1u << consumer_id;
         uint32_t old_mask = consumer_mask.fetch_and(~my_bit, std::memory_order_acq_rel);
         return (old_mask & my_bit) != 0;
     }
 };
-} // namespace syncflow
+}

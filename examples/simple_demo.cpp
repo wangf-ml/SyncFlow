@@ -5,15 +5,14 @@
 #include "packet_guard.h"
 
 using namespace syncflow;
-
 int main() {
     ImageInfo info;
     info.width = 1920; info.height = 1080;
-    info.pixel_format_ = syncflow::PixelFormat::RGB;
+    info.pixel_format = PixelFormat::RGB;
     info.size = 1920 * 1080 * 3;
 
     RingPacketPool pool;
-    pool.init(4, info, 1);
+    pool.init(8, info, 1);
 
     // 生产者线程（不变）
     std::thread producer([&] {
