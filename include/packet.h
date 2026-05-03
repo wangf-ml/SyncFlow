@@ -1,9 +1,9 @@
 #pragma once
 
 #include <atomic>
-
-#include <image_buffer.h>
 #include <memory>
+
+#include "image_buffer.h"
 
 
 namespace syncflow {

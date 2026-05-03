@@ -11,7 +11,7 @@ ImageInfo MakeTestImageInfo() {
     ImageInfo info;
     info.width  = 1920;
     info.height = 1080;
-    info.pixel_format_ = syncflow::PixelFormat::RGB;
+    info.pixel_format = PixelFormat::RGB;
     info.stride = 1920;
     info.size   = 1920 * 1080 * 3;  // RGB 帧大小
     return info;

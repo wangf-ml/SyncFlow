@@ -26,6 +26,10 @@ public:
         }
     }
 
+    bool is_running() const {
+        return runing_;
+    }
+
 protected:
     virtual void run() = 0;
 

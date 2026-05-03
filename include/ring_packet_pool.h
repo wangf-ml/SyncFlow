@@ -22,7 +22,7 @@ public:
     // 无参构造：仅做轻量初始化，不分配资源
     RingPacketPool();
 
-    // 重量级初始化：预分配所有 Packet，绑定图像属性与消费者数量
+    // 预分配所有 Packet，绑定图像属性与消费者数量
     StatusCode init(size_t pool_size,
                 const ImageInfo& image_attr,
                 size_t num_consumers);
@@ -60,4 +60,4 @@ private:
     
 };
 
-} // namespace syncflow
+}
