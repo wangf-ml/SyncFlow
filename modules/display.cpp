@@ -5,6 +5,6 @@
 namespace syncflow::modules {
     void Display::consume(const PacketGuard& guard) {
         int frame = *(int*)(guard.image()->data);
-        //std::cout << "[" << name_ << "][consumer-" << consumer_id() << "] frame: " << frame << std::endl;
+        std::cout << "[" << name_ << "][consumer-" << consumer_id() << "] frame: " << frame << std::endl;
     }
 }

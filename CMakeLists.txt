@@ -13,6 +13,12 @@ add_library(syncflow_core
     src/channel.cpp
 )
 
+target_include_directories(syncflow_core PUBLIC include)
+
 enable_testing()
 
 add_subdirectory(test)
+
+# 新增
+add_subdirectory(modules)
+add_subdirectory(examples)   # 需要创建该目录并放入 channel_demo.cpp

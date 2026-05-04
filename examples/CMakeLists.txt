@@ -1,0 +1,2 @@
+add_executable(channel_demo channel_demo.cpp)
+target_link_libraries(channel_demo syncflow_modules pthread)

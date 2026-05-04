@@ -78,6 +78,7 @@ namespace syncflow {
     {
         uint64_t idx = (write_index_.load(std::memory_order_acquire) - 1) % pool_size_;
         ringpool_[idx].consumer_mask.store(AllConsumersMask(consumer_count()), std::memory_order_release);
+        //后续补充日志打印mask位图信息
     }
 
     Packet* RingPacketPool::CAcquire(size_t consumer_id) {

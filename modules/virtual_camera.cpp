@@ -8,7 +8,7 @@ namespace syncflow::modules {
             return false;  // 已经生产完所有帧
         }
         *(int*)(pkt->image->data) = current_frame_;
-        std::cout << "VirtualCamera produced frame: " << current_frame_ << std::endl;
+        //std::cout << "VirtualCamera produced frame: " << current_frame_ << std::endl;
         ++current_frame_;
         return true;
     }

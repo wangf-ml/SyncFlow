@@ -2,7 +2,6 @@
 
 #include <atomic>
 #include <memory>
-#include <iostream>
 
 #include "image_buffer.h"
 
@@ -13,7 +12,7 @@ constexpr uint32_t kMaxConsumers = 6;
 
 // 根据消费者数量生成“所有消费者均需处理”的掩码
 inline uint32_t AllConsumersMask(size_t num_consumers) {
-    return (num_consumers < kMaxConsumers) ? (1u << num_consumers) - 1u : ~0u;
+    return (num_consumers < kMaxConsumers) ? (1u << num_consumers) - 1u : ~0u; 
 }
 
 /**

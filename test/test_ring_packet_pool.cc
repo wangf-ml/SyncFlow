@@ -3,6 +3,7 @@
 #include "ring_packet_pool.h"
 #include "image_info.h"
 #include "status.h"
+#include "packet_guard.h"
 
 using namespace syncflow;
 
@@ -97,20 +98,19 @@ TEST(RingPacketPoolTest, MultiConsumerClaim) {
     ASSERT_NE(pkt, nullptr);
     pool.PRelease();
 
-    // 三个消费者都去尝试获取
+    // 每个消费者依次获取并处理
     for (size_t i = 0; i < kConsumers; ++i) {
         Packet* rcv = pool.CAcquire(i);
         ASSERT_NE(rcv, nullptr);
-    }
-
-    // 再次获取应该失败（已经处理过）
-    for (size_t i = 0; i < kConsumers; ++i) {
-        Packet* rcv = pool.CAcquire(i);
-        EXPECT_EQ(rcv, nullptr);
+        // 使用 PacketGuard 认领
+        auto guard = PacketGuard::acquire(rcv, static_cast<uint32_t>(i));
+        EXPECT_TRUE(guard) << "Consumer " << i << " should claim successfully";
+        // 推进读指针
+        pool.CRelease(i);
     }
 
     // 所有消费者释放
     for (size_t i = 0; i < kConsumers; ++i) {
-        pool.CRelease(i);
+        EXPECT_EQ(pool.CAcquire(i), nullptr);
     }
 }
