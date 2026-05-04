@@ -17,8 +17,9 @@ class Channel {
 public:
     Channel() = default;
 
-    Status init(size_t pool_size, const ImageInfo& info, size_t num_consumers);
+    StatusCode init(size_t pool_size, const ImageInfo& info, size_t num_consumers);
     
+    void register_producer(std::unique_ptr<Producer> producer);
     void register_consumer(std::unique_ptr<Consumer> consumer, uint32_t consumer_id);
     void start_all();
     void stop_all();

@@ -1,10 +1,8 @@
-#pragma once
-
 #include <iostream>
 
 #include "virtual_camera.h"
 
-using namespace syncflow::modules {
+namespace syncflow::modules {
     bool VirtualCamera::produce(Packet* pkt) {
         if (current_frame_ >= total_frames_) {
             return false;  // 已经生产完所有帧

@@ -1,12 +1,15 @@
-#pragma once
-
 #include "channel.h"
 #include "consumer.h"
 #include "producer.h"
 
-using namespace syncflow {
-    Status Channel::init(size_t pool_size, const ImageInfo& info, size_t num_consumers) {
+namespace syncflow {
+    StatusCode Channel::init(size_t pool_size, const ImageInfo& info, size_t num_consumers) {
         return ring_pool_.init(pool_size, info, num_consumers);
+    }
+
+    void Channel::register_producer(std::unique_ptr<Producer> producer) {
+        producer->set_pool(&ring_pool_);
+        producer_ = std::move(producer);
     }
 
     void Channel::register_consumer(std::unique_ptr<Consumer> consumer, uint32_t consumer_id) {

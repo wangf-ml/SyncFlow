@@ -2,6 +2,7 @@
 
 #include "module_base.h"
 #include "ring_packet_pool.h"
+#include "packet.h"
 
 namespace syncflow { 
 class Producer : public ModuleBase {
@@ -22,6 +23,7 @@ protected:
             Packet* pkt = pool_->PAcquire();
             if (!pkt) {
                 std::this_thread::yield();  // 没有可用槽位，稍后重试
+                //std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 continue;
             }
             if (produce(pkt)) {

@@ -4,16 +4,17 @@
 
 #include "consumer.h"
 
-using namespace syncflow::modules {
-class DisplayModule : public Consumer {
+namespace syncflow::modules {
+class Display : public Consumer {
 public:
-    DisplayModule() = default;
+    Display() = default;
     void set_name(const std::string& name) { name_ = name; }
 
 protected:
-    void consume(PacketGuard guard) override;
+    void consume(const PacketGuard& guard);
 
 private:
     std::string name_{"DisplayModule"};
+    std::atomic<size_t> frames_consumed_{0};
 };
 }

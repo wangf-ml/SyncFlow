@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <memory>
+#include <iostream>
 
 #include "image_buffer.h"
 
@@ -61,6 +62,7 @@ struct Packet {
 
     bool try_claim(uint32_t consumer_id) {
         uint32_t my_bit = 1u << consumer_id;
+        //std::cout << consumer_id << " " << my_bit << " " << consumer_mask << std::endl;
         uint32_t old_mask = consumer_mask.fetch_and(~my_bit, std::memory_order_acq_rel);
         return (old_mask & my_bit) != 0;
     }

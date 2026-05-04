@@ -57,7 +57,7 @@ protected:
                 std::cout << "Consumer[" << consumer_id_ << "] got frame: " << frame << std::endl;
                 ++consumed;
             }
-            pool_->CRelease(consumer_id_);
+            pool_->CRelease();
         }
         std::cout << "Consumer[" << consumer_id_ << "] finished." << std::endl;
     }
@@ -118,7 +118,7 @@ int main() {
     int slow_skip = 3;
 
     RingPacketPool pool;
-    pool.init(16, info, 3);
+    pool.init(16, info, 1);
 
     CameraModule camera(&pool, 100);
     FastConsumer consumer1(&pool, total_frames, 0);
