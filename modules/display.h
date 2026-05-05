@@ -15,6 +15,5 @@ protected:
 
 private:
     std::string name_{"DisplayModule"};
-    std::atomic<size_t> frames_consumed_{0};
 };
 }

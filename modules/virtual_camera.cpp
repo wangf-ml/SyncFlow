@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "virtual_camera.h"
+#include "logger.h"
 
 namespace syncflow::modules {
     bool VirtualCamera::produce(Packet* pkt) {
@@ -8,7 +9,7 @@ namespace syncflow::modules {
             return false;  // 已经生产完所有帧
         }
         *(int*)(pkt->image->data) = current_frame_;
-        //std::cout << "VirtualCamera produced frame: " << current_frame_ << std::endl;
+        SYNC_LOG("produce frame " << current_frame_);
         ++current_frame_;
         return true;
     }

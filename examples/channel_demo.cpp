@@ -1,14 +1,18 @@
-#include <iostream>
 #include <memory>
+#include<chrono>
+
 #include "ring_packet_pool.h"
 #include "image_info.h"
 #include "packet_guard.h"
 #include "virtual_camera.h"
 #include "display.h"
 #include "channel.h"
+#include "logger.h"
  
 using namespace syncflow;
 int main() {
+    syncflow::init_log("./syncflow.log");
+
     ImageInfo info;
     info.width = 1920;
     info.height = 1080;
@@ -37,11 +41,10 @@ int main() {
     display2->set_name("Display2");
     channel.register_consumer(std::move(display2), 2);
 
+    auto start_time = std::chrono::steady_clock::now();
+
     // 启动全部模块
     channel.start_all();
-
-    int cur_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch()).count();
 
     while (!cam_raw->is_done()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -49,13 +52,14 @@ int main() {
 
     //给消费者一点时间消费完残帧
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-    int total_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch()).count() - cur_time;
-
-    std::cout << "Total time: " << total_time << " ms" << std::endl;
+    
     // 停止全部模块
     channel.stop_all();
 
+    auto end_time = std::chrono::steady_clock::now();
+    int total_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+    SYNC_LOG("Total time: " << total_time << " ms");
+
+    syncflow::close_log();
     return 0;
 }
