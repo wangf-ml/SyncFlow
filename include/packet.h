@@ -58,7 +58,6 @@ struct Packet {
     std::atomic<unsigned> consumer_mask{0};
     std::atomic<unsigned> slot_read_index_{0};
 
-
     bool try_claim(uint32_t consumer_id) {
         uint32_t my_bit = 1u << consumer_id;
         //std::cout << consumer_id << " " << my_bit << " " << consumer_mask << std::endl;

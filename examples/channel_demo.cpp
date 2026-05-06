@@ -20,7 +20,7 @@ int main() {
     info.size = 1920 * 1080 * 3;           // RGB 帧大小
 
     Channel channel;
-    channel.init(5, info, 3);
+    channel.init(6, info, 3);
 
     // 创建具体模块（注入依赖由 Channel 负责）
     auto camera = std::make_unique<syncflow::modules::VirtualCamera>();
@@ -50,10 +50,9 @@ int main() {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
-    //给消费者一点时间消费完残帧
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    //给消费者消费残帧
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
     
-    // 停止全部模块
     channel.stop_all();
 
     auto end_time = std::chrono::steady_clock::now();

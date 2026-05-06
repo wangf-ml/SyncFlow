@@ -43,8 +43,12 @@ public:
     size_t consumer_count() const { return consumer_count_; }
     bool initialized() const { return initialized_; }
 
-private:
     uint64_t computeWatermark() const;
+
+    unsigned get_write_index() const { return write_index_.load(std::memory_order_acquire); }   
+
+private:
+    
     void shutdown();
     void wait_for_available(uint32_t timeout_ms);
 
@@ -52,6 +56,7 @@ private:
     bool initialized_{false};
     std::vector<Packet> ringpool_;
     std::atomic<unsigned> write_index_{0};
+    std::atomic<uint64_t> alloc_index_{0};
     std::unique_ptr<std::atomic<unsigned>[]> consumer_read_indices_;
     size_t consumer_count_{0};
     std::vector<uint8_t> continuous_memory_;
