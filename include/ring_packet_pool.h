@@ -56,7 +56,6 @@ private:
     bool initialized_{false};
     std::vector<Packet> ringpool_;
     std::atomic<unsigned> write_index_{0};
-    std::atomic<uint64_t> alloc_index_{0};
     std::unique_ptr<std::atomic<unsigned>[]> consumer_read_indices_;
     size_t consumer_count_{0};
     std::vector<uint8_t> continuous_memory_;

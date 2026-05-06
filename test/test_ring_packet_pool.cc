@@ -127,11 +127,16 @@ TEST(RingPacketPoolTest, AcquireReturnsNullBeforeRelease) {
     *(int*)(pkt->image->data) = 40; // 写入一些数据
 
     // 此时，消费者绝对不应该获取到任何帧
-    ASSERT_EQ(pool.CAcquire(0), nullptr);
+    Packet* rcv = pool.CAcquire(0);
+    ASSERT_NE(rcv, nullptr);
+    EXPECT_FALSE(rcv->try_claim(0));
     
     // 生产者发布
     pool.PRelease();
+
+    rcv = pool.CAcquire(0);  // 读指针未推进，仍看到同一槽位
+    ASSERT_NE(rcv, nullptr);
+    EXPECT_TRUE(rcv->try_claim(0));
     
-    // 之后消费者才能获取
-    ASSERT_NE(pool.CAcquire(0), nullptr);
+    pool.CRelease(0);
 }

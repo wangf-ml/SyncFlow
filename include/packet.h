@@ -60,6 +60,10 @@ struct Packet {
 
 
     bool try_claim(uint32_t consumer_id) {
+        if (consumer_mask.load(std::memory_order_acquire) == 0) {
+            return false;
+        }
+
         uint32_t my_bit = 1u << consumer_id;
         //std::cout << consumer_id << " " << my_bit << " " << consumer_mask << std::endl;
         uint32_t old_mask = consumer_mask.fetch_and(~my_bit, std::memory_order_acq_rel);
