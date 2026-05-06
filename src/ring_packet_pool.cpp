@@ -62,23 +62,26 @@ namespace syncflow {
 
     Packet* RingPacketPool::PAcquire() 
     {
-        uint64_t w = write_index_.fetch_add(1, std::memory_order_acq_rel);
+        uint64_t slot  = alloc_index_.fetch_add(1, std::memory_order_acq_rel);
         uint64_t min_read = computeWatermark(); // 最慢消费者进度
 
         // 队列满判断：写索引领先最慢消费者整整一圈
-        if (w - min_read >= pool_size_) {
+        if (slot - min_read >= pool_size_) {
             return nullptr;
         }
 
         // 直接返回对应的槽位（此时一定可安全覆盖）
-        return &ringpool_[w % pool_size_];
+        Packet* pkt = &ringpool_[slot % pool_size_];
+        pkt->epoch++;
+        return pkt;
     }
 
     void RingPacketPool::PRelease() 
     {
-        uint64_t idx = (write_index_.load(std::memory_order_acquire) - 1) % pool_size_;
-        ringpool_[idx].consumer_mask.store(AllConsumersMask(consumer_count()), std::memory_order_release);
-        //后续补充日志打印mask位图信息
+        uint64_t slot = (alloc_index_.load(std::memory_order_relaxed) - 1) % pool_size_;
+        ringpool_[slot].consumer_mask.store(AllConsumersMask(consumer_count()), std::memory_order_release);
+
+        write_index_.fetch_add(1, std::memory_order_release);
     }
 
     Packet* RingPacketPool::CAcquire(size_t consumer_id) {
