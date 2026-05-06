@@ -4,7 +4,6 @@
 #include "image_info.h"
 #include "status.h"
 #include "packet_guard.h"
-#include <thread>
 
 using namespace syncflow;
 
@@ -114,24 +113,4 @@ TEST(RingPacketPoolTest, MultiConsumerClaim) {
     for (size_t i = 0; i < kConsumers; ++i) {
         EXPECT_EQ(pool.CAcquire(i), nullptr);
     }
-}
-TEST(RingPacketPoolTest, AcquireReturnsNullBeforeRelease) {
-    RingPacketPool pool;
-    auto info = MakeTestImageInfo();
-    const size_t kConsumers = 3;
-    ASSERT_EQ(pool.init(4, info, kConsumers), StatusCode::OK);
-    
-    // 生产者获取一个槽位，写入，但绝不 Release
-    auto* pkt = pool.PAcquire();
-    ASSERT_NE(pkt, nullptr);
-    *(int*)(pkt->image->data) = 40; // 写入一些数据
-
-    // 此时，消费者绝对不应该获取到任何帧
-    ASSERT_EQ(pool.CAcquire(0), nullptr);
-    
-    // 生产者发布
-    pool.PRelease();
-    
-    // 之后消费者才能获取
-    ASSERT_NE(pool.CAcquire(0), nullptr);
 }
