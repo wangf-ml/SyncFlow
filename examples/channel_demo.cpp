@@ -51,7 +51,7 @@ int main() {
     }
 
     //给消费者一点时间消费完残帧
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(25));
     
     // 停止全部模块
     channel.stop_all();
