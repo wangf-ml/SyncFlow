@@ -5,7 +5,6 @@
 #include "ring_packet_pool.h"
 #include "status.h"
 #include "image_buffer.h"
-#include "packet.h"
 
 namespace syncflow {
 
@@ -63,7 +62,7 @@ namespace syncflow {
     void RingPacketPool::PRelease() 
     {
         uint64_t idx = (write_index_.load(std::memory_order_acquire) - 1) % pool_size_;
-        uint32_t full_mask = AllConsumersMask(consumer_count());
+        uint32_t full_mask = ringpool_[idx].AllConsumersMask(consumer_count());
         ringpool_[idx].consumer_mask.store(full_mask, std::memory_order_release);
     }
 

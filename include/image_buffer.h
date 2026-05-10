@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "image_info.h"
+#include "config.h"
 
 
 namespace syncflow {
@@ -15,7 +16,9 @@ namespace syncflow {
  * 
  * 参照NVIDIA NvSciBuf：封装DMA内存句柄，为未来支持零拷贝共享。
  */
+
 struct ImageBuffer {
+
     void* data{nullptr};
     // 物理地址0表示无效
     uint64_t phy_addr{0};
@@ -67,11 +70,16 @@ struct ImageBuffer {
         }
         return *this;
     }
+
     bool try_claim(uint32_t consumer_id) {
         uint32_t my_bit = 1u << consumer_id;
         uint32_t old_mask = consumer_mask.fetch_and(~my_bit, std::memory_order_acq_rel);
         return (old_mask & my_bit) != 0;
     }
+
+    inline uint32_t AllConsumersMask(size_t num_consumers) {
+    return (num_consumers < kMaxConsumers) ? (1u << num_consumers) - 1u : ~0u;
+}
 };
 }
 

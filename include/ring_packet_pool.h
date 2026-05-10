@@ -13,7 +13,6 @@
 
 #include "image_buffer.h"
 #include "image_info.h"
-#include "packet.h"
 #include "status.h"
 
 namespace syncflow {
