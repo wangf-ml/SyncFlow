@@ -3,7 +3,6 @@
 
 #include "ring_packet_pool.h"
 #include "image_info.h"
-#include "packet_guard.h"
 #include "virtual_camera.h"
 #include "display.h"
 #include "channel.h"
@@ -23,11 +22,6 @@ int main() {
     channel.init(5, info, 3);
 
     // 创建具体模块（注入依赖由 Channel 负责）
-    auto camera = std::make_unique<syncflow::modules::VirtualCamera>();
-    camera->set_total_frames(30);
-    auto* cam_raw = camera.get();
-    channel.register_producer(std::move(camera));
-    
 
     auto display0 = std::make_unique<syncflow::modules::Display>();
     display0->set_name("Display0");
@@ -40,6 +34,11 @@ int main() {
     auto display2 = std::make_unique<syncflow::modules::Display>();
     display2->set_name("Display2");
     channel.register_consumer(std::move(display2), 2);
+
+    auto camera = std::make_unique<syncflow::modules::VirtualCamera>();
+    camera->set_total_frames(30);
+    auto* cam_raw = camera.get();
+    channel.register_producer(std::move(camera));
 
     auto start_time = std::chrono::steady_clock::now();
 

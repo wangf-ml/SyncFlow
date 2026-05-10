@@ -27,24 +27,13 @@ namespace syncflow {
             continuous_memory_.resize(pool_size * offset);
 
             ringpool_.resize(pool_size);
+
             for (size_t i = 0; i < pool_size; ++i) {
-                auto* buf = new ImageBuffer();
-                buf->data   = continuous_memory_.data() + i * offset;
-                buf->offset   = offset;
-                buf->info   = image_attr;
-
-                std::shared_ptr<ImageBuffer> img_ptr(
-                    buf, [this, i](ImageBuffer* ptr) {
-                        ringpool_[i].slot_read_index_.fetch_add(1, std::memory_order_release);
-                        cv_.notify_one();
-                        delete ptr;
-                    }
-                );
-
-                ringpool_[i].image = std::move(img_ptr);
+                ringpool_[i].data   = continuous_memory_.data() + i * offset;
+                ringpool_[i].offset   = offset;
+                ringpool_[i].info   = image_attr;
             }
 
-            write_index_.store(0, std::memory_order_release); 
             consumer_read_indices_ = std::make_unique<std::atomic<unsigned>[]>(num_consumers);
             for (size_t i = 0; i < num_consumers; ++i) {
                 consumer_read_indices_[i].store(0, std::memory_order_release);
@@ -60,26 +49,26 @@ namespace syncflow {
         return StatusCode::OK;
     }
 
-    Packet* RingPacketPool::PAcquire() 
+    ImageBuffer* RingPacketPool::PAcquire() 
     {
-        uint64_t w = write_index_.fetch_add(1, std::memory_order_acq_rel);
-        uint64_t min_read = computeWatermark();
-        if (w - min_read >= pool_size_) {
-            return nullptr;
-        }
-        Packet* pkt = &ringpool_[w % pool_size_];
-        pkt->epoch++;
+        uint64_t w = write_index_.load(std::memory_order_acquire);
+        uint64_t watermark = computeWatermark();
+        if (w - watermark >= pool_size_) return nullptr;
 
-        return pkt;
+        uint64_t idx = w % pool_size_;
+        write_index_.store(w + 1, std::memory_order_release);
+        return &ringpool_[idx];   // 直接返回池内对象的地址
     }
 
     void RingPacketPool::PRelease() 
     {
         uint64_t idx = (write_index_.load(std::memory_order_acquire) - 1) % pool_size_;
-        ringpool_[idx].consumer_mask.store(AllConsumersMask(consumer_count()), std::memory_order_release);
+        uint32_t full_mask = AllConsumersMask(consumer_count());
+        ringpool_[idx].consumer_mask.store(full_mask, std::memory_order_release);
     }
 
-    Packet* RingPacketPool::CAcquire(size_t consumer_id) {
+    ImageBuffer* RingPacketPool::CAcquire(size_t consumer_id) 
+    {
         uint64_t cur_read = consumer_read_indices_[consumer_id].load(std::memory_order_acquire);
         uint64_t cur_write = write_index_.load(std::memory_order_acquire);
         // 1. 判断队列是否为空
@@ -89,14 +78,16 @@ namespace syncflow {
 
         // 2. 计算槽位索引
         uint64_t idx = cur_read % pool_size_;
-        auto& pkt = ringpool_[idx];
+        ImageBuffer* buf = &ringpool_[idx];
 
-        // if (!pkt.try_claim(static_cast<uint32_t>(consumer_id))) {
-        //     //已处理过
-        //     return nullptr;
-        // }
 
-        return &pkt;
+        if (!buf->try_claim(static_cast<uint32_t>(consumer_id))) {
+            //如果认领失败就找下一帧就会导致丢帧！！！
+            //consumer_read_indices_[consumer_id].fetch_add(1, std::memory_order_release);
+            return nullptr;
+        }
+
+        return buf;
     }
 
     void RingPacketPool::CRelease(size_t consumer_id) 
@@ -106,24 +97,13 @@ namespace syncflow {
 
     uint64_t RingPacketPool::computeWatermark() const 
     {
+        if (consumer_count_ == 0) return write_index_.load(std::memory_order_acquire);
         uint64_t min_read = UINT64_MAX;
         for (size_t i = 0; i < consumer_count_; ++i) {
             uint64_t r = consumer_read_indices_[i].load(std::memory_order_acquire);
             if (r < min_read) min_read = r;
         }
         return min_read;
-    }
-
-    void RingPacketPool::shutdown() 
-    {
-        std::unique_lock<std::mutex> lock(cv_mutex_);
-        cv_.notify_all();
-    }
-
-    void RingPacketPool::wait_for_available(uint32_t timeout_ms) 
-    {
-        std::unique_lock<std::mutex> lock(cv_mutex_);
-        cv_.wait_for(lock, std::chrono::milliseconds(timeout_ms));
     }
 
 }

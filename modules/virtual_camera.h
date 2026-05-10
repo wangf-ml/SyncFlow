@@ -13,7 +13,7 @@ public:
     }
 
 protected:
-    bool produce(Packet* pkt);
+    bool produce(ImageBuffer* buf);
 
 private:
     int total_frames_{0};

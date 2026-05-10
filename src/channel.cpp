@@ -19,12 +19,11 @@ namespace syncflow {
     }
 
     void Channel::start_all() {
-        if (producer_) {
-            producer_->set_pool(&ring_pool_);
-            producer_->start();
-        }
         for (auto& consumer : consumers_) {
             consumer->start();
+        }
+        if (producer_) {
+            producer_->start();
         }
     }
 

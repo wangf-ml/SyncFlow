@@ -7,6 +7,7 @@
 #include <vector>
 #include <mutex>
 #include <condition_variable>
+#include <thread>
 
 
 
@@ -33,10 +34,10 @@ public:
     RingPacketPool(RingPacketPool&&) = delete;
     RingPacketPool& operator=(RingPacketPool&&) = delete;
 
-    Packet* PAcquire();
+    ImageBuffer* PAcquire();
     void PRelease();
 
-    Packet* CAcquire(size_t consumer_id);
+    ImageBuffer* CAcquire(size_t consumer_id);
     void CRelease(size_t consumer_id);
 
     size_t capacity() const { return pool_size_; }
@@ -45,22 +46,28 @@ public:
 
     uint64_t computeWatermark() const;
 
-    unsigned get_write_index() const { return write_index_.load(std::memory_order_acquire); }   
+    unsigned get_write_index() const { return write_index_.load(std::memory_order_acquire); }
+
+    void signal_consumer_ready() { 
+        ready_consumers_.fetch_add(1, std::memory_order_release); 
+    }
+
+    void wait_all_consumers_ready() {
+        while (ready_consumers_.load(std::memory_order_acquire) < consumer_count_) {
+            std::this_thread::yield();
+        }
+    }
 
 private:
     
-    void shutdown();
-    void wait_for_available(uint32_t timeout_ms);
-
     size_t pool_size_{0};
     bool initialized_{false};
-    std::vector<Packet> ringpool_;
+    std::vector<ImageBuffer> ringpool_;
     std::atomic<unsigned> write_index_{0};
     std::unique_ptr<std::atomic<unsigned>[]> consumer_read_indices_;
     size_t consumer_count_{0};
     std::vector<uint8_t> continuous_memory_;
-    std::mutex cv_mutex_;
-    std::condition_variable cv_;
+    std::atomic<size_t> ready_consumers_{0};
     
 };
 
